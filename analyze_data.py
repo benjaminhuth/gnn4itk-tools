@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import sys
 from pathlib import Path
@@ -35,7 +35,12 @@ def df_from_dict(d):
 
 
 def process(filename, cut, target_pt, target_nhits):
-    event = torch.load(filename, map_location="cpu")
+    try:
+        event = torch.load(filename, map_location="cpu")
+    except:
+        print("Failed to load", filename)
+        return pd.DataFrame()
+
     res = {}
 
     true_edges = event.track_edges
