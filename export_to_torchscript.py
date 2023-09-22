@@ -19,6 +19,8 @@ parser.add_argument("checkpoint", type=str)
 parser.add_argument("-o", "--output", type=str, default="a.pt")
 args = vars(parser.parse_args())
 
+print("loaded torch", torch.__version__)
+
 checkpoint_path = Path(args["checkpoint"])
 assert checkpoint_path.exists()
 
@@ -43,5 +45,17 @@ if config["stage"] == "edge_classifier":
     script = module.to_torchscript(method="trace", example_inputs=(x, edge_index))
 elif config["stage"] == "graph_construction":
     script = module.to_torchscript(method="trace", example_inputs=(x,))
+else:
+    print("unkown stage '{}'".format(config["stage"]))
 
 torch.jit.save(script, args["output"])
+
+# Test
+loaded_model = torch.jit.load(args["output"])
+
+if config["stage"] == "edge_classifier":
+    print("Test with data shapes",x.shape, edge_index.shape)
+    loaded_model(x, edge_index)
+elif config["stage"] == "graph_construction":
+    print("Test with data shapes",x.shape)
+    loaded_model(x)

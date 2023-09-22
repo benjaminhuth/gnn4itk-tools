@@ -34,11 +34,11 @@ class BatchPlotter:
         return fig, ax
 
     def plot_parameteric(
-        self, pt_min, pt_max, only_pseudo_particles, max_tracks=10, legend=True
+            self, pt_min, pt_max, only_pseudo_particles=False, max_tracks=10, legend=True
     ):
         pt_mask = ((self.batch.pt >= pt_min) & (self.batch.pt < pt_max)).numpy()
 
-        if only_pseudo_particles == True:
+        if only_pseudo_particles == True and "particle_type" in self.batch:
             pseudo_mask = (self.batch.particle_type == 0).numpy()
         else:
             pseudo_mask = np.ones_like(pt_mask)

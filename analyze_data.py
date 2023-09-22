@@ -69,6 +69,8 @@ def process(filename, cut, target_pt, target_nhits):
     else:
         edge_index = event.edge_index
 
+    res["num_predicted_edges"] = event.edge_index.shape[1]
+
     metrics_all = effpur(true_edges, edge_index)
     res["eff"] = metrics_all["eff"]
     res["pur"] = metrics_all["pur"]
@@ -88,13 +90,14 @@ if __name__ == "__main__":
     parser.add_argument("--cut", "-c", type=float, default=0.5)
     parser.add_argument("--max", type=int)
     parser.add_argument("--jobs", "-j", type=int, default=16)
+    parser.add_argument("--target_pt", type=float, default=0.5)
     args = vars(parser.parse_args())
 
     path = Path(args["path"])
     assert path.exists()
     assert args["cut"] > 0 and args["cut"] < 1
 
-    target_pt = 0.5
+    target_pt = args["target_pt"]
     target_nhits = 3
     print(
         "score_cut:", args["cut"], "target_pt", target_pt, "target_nhits", target_nhits
@@ -124,9 +127,16 @@ if __name__ == "__main__":
 
         vals = res[c]
         vals = vals[~pd.isnull(vals)].to_numpy()
+
+        def f(v):
+            if v > 100:
+                return "{}".format(int(v))
+            else:
+                return "{:3f}".format(v)
+
         print(
             c.ljust(l),
-            "avg: {:.3f} +- {:.3f}, max: {:.3f}, min: {:.3f}".format(
-                np.mean(vals), np.std(vals), max(vals), min(vals)
+            "avg: {} +- {}, max: {}, min: {}".format(
+                f(np.mean(vals)), f(np.std(vals)), f(max(vals)), f(min(vals))
             ),
         )
